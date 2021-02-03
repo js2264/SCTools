@@ -8,6 +8,7 @@
 #' @param q 
 #' @param average_expr 
 #' @param only_average 
+#' @param assay.type
 #'
 #' @import dplyr
 #' @import tidyr
@@ -16,7 +17,10 @@
 #'
 #' @export
 
-plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FALSE, only_average = FALSE) {
+plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FALSE, only_average = FALSE, assay.type = 'logcounts') {
+    
+    .checkGenes(sce, genes)
+
     df <- data.frame(
         colData(sce), 
         PCA_X = reducedDim(sce, 'PCA')[, 1], 
@@ -32,8 +36,8 @@ plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FAL
     df[, "Dim_2"] <- df[, paste0(dim, "_Y")]
     
     # ---- Only 1 gene
-    if (all(length(genes) == 1 & genes %in% row.names(sce))) {
-        df$gene <- bindByQuantiles(logcounts(sce)[genes, ], q_low = 1 - q, q_high = q)
+    if (all(length(genes) == 1)) {
+        df$gene <- bindByQuantiles(assay(sce, assay.type)[genes, ], q_low = 1 - q, q_high = q)
         p <- ggplot(df, aes_string(x = "Dim_1", y = "Dim_2", fill = "gene")) + 
             geom_point(pch = 21, alpha = 0.5, col = '#bcbcbc', stroke = 0.2) + 
             theme_bw() + 
@@ -49,9 +53,9 @@ plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FAL
     }
     
     # ---- Multiple genes
-    if (all(length(genes) > 1 & genes %in% row.names(sce))) {
+    if (all(length(genes) > 1)) {
         for (gene in genes) {
-            expr <- bindByQuantiles(logcounts(sce)[gene, ], q_low = 1 - q, q_high = q)
+            expr <- bindByQuantiles(assay(sce, assay.type)[gene, ], q_low = 1 - q, q_high = q)
             df[, paste0(gene, "_expr")] <- expr
         }
         df_bound <- gather(df, "gene", "expr", -grep("_expr$", colnames(df), value = TRUE, invert = TRUE))
@@ -76,7 +80,7 @@ plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FAL
             '[['("plots")
         
         if (average_expr == TRUE) {
-            df$gene <- bindByQuantiles(Matrix::colMeans(logcounts(sce)[genes, ]), q_low = 1 - q, q_high = q)
+            df$gene <- bindByQuantiles(Matrix::colMeans(assay(sce, assay.type)[genes, ]), q_low = 1 - q, q_high = q)
             p <- ggplot(df, aes_string(x = "Dim_1", y = "Dim_2", fill = "expr")) + 
                     geom_point(pch = 21, alpha = 0.5, col = '#bcbcbc', stroke = 0.2) + 
                     theme_bw() + 
@@ -109,6 +113,7 @@ plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FAL
 #' @param sce 
 #' @param genes 
 #' @param by 
+#' @param assay.type
 #'
 #' @return plot
 #' 
@@ -117,10 +122,13 @@ plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FAL
 #'
 #' @export
 
-plotBoxplots <- function(sce, genes, by) {
+plotBoxplots <- function(sce, genes, by = 'annotation', assay.type = 'logcounts') {
+    
+    .checkGenes(sce, genes)
+
     df <- data.frame(
         by = colData(sce)[[by]],
-        t(as.matrix(logcounts(sce[genes,])))
+        t(as.matrix(assay(sce, assay.type)[genes,]))
     ) %>% 
         gather('gene', 'expr', -by) %>% 
         filter(!is.na(by)) %>% 
@@ -143,6 +151,7 @@ plotBoxplots <- function(sce, genes, by) {
 #' @param by 
 #' @param dim 
 #' @param q 
+#' @param assay.type
 #'
 #' @import dplyr
 #' @import tidyr
@@ -151,7 +160,7 @@ plotBoxplots <- function(sce, genes, by) {
 #'
 #' @export
 
-plotBoth <- function(sce, genes, by, dim = "UMAP", q = 0.95) {
+plotBoth <- function(sce, genes, by, dim = "UMAP", q = 0.95, assay.type = 'logcounts') {
     p1 <- plotEmbedding(sce, genes[[1]], dim, average_expr = FALSE, only_average = FALSE)
     p2 <- plotBoxplots(sce, genes[[1]], by)
     p <- cowplot::plot_grid(p1, p2, ncol = 1, align = 'v')

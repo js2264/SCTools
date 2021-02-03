@@ -17,3 +17,19 @@ bindByQuantiles <- function(vec, q_low = 0, q_high = 0.99) {
 	return(bound_vec)
 }
 
+#' Checking gene names in SCE
+#'
+#' @param sce 
+#' @param genes 
+#'
+#' @return ...
+
+.checkGenes <- function(sce, genes) {
+	absent <- genes[!genes %in% rownames(sce)]
+	assertthat::assert_that(
+		length(absent) == 0, 
+		msg = message(paste(absent, collapse = ', '), ": not in the SCE. Aborting.")
+	)
+}
+
+

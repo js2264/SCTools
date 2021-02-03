@@ -62,7 +62,7 @@ plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FAL
                 # scale_fill_gradient(low = 'white', high = '#8b4e36') + 
                 scale_fill_distiller(palette = 'YlOrBr', direction = 1) + 
                 coord_fixed((max(df[, "Dim_1"])-min(df[, "Dim_1"]))/(max(df[, "Dim_2"])-min(df[, "Dim_2"]))) + 
-                labs(y = paste(dim, " 2"), x = paste(dim, " 1"), fill = genes) + 
+                labs(y = paste(dim, " 2"), x = paste(dim, " 1"), fill = gene) + 
                 theme(
                     panel.grid.major = element_blank(),
                     panel.grid.minor = element_blank(), 
@@ -123,7 +123,8 @@ plotBoxplots <- function(sce, genes, by) {
         t(as.matrix(logcounts(sce[genes,])))
     ) %>% 
         gather('gene', 'expr', -by) %>% 
-        filter(!is.na(by))
+        filter(!is.na(by)) %>% 
+        mutate(gene = factor(gene, genes))
     p <- ggplot(df, aes(x = by, y = expr, fill = by)) +  
         geom_boxplot(outlier.shape = 19, outlier.fill = NA) + 
         theme_bw() + 

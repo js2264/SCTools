@@ -4,7 +4,7 @@
 \alias{plotBoth}
 \title{plotBoth}
 \usage{
-plotBoth(sce, genes, by, dim = "UMAP", q = 0.95)
+plotBoth(sce, genes, by, dim = "UMAP", q = 0.95, assay.type = "logcounts")
 }
 \arguments{
 \item{sce}{}
@@ -16,6 +16,8 @@ plotBoth(sce, genes, by, dim = "UMAP", q = 0.95)
 \item{dim}{}
 
 \item{q}{}
+
+\item{assay.type}{}
 }
 \value{
 plot

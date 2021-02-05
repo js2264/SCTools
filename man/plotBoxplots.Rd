@@ -4,7 +4,7 @@
 \alias{plotBoxplots}
 \title{plotGE}
 \usage{
-plotBoxplots(sce, genes, by)
+plotBoxplots(sce, genes, by = "annotation", assay.type = "logcounts")
 }
 \arguments{
 \item{sce}{}
@@ -12,6 +12,8 @@ plotBoxplots(sce, genes, by)
 \item{genes}{}
 
 \item{by}{}
+
+\item{assay.type}{}
 }
 \value{
 plot

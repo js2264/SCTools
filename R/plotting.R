@@ -4,7 +4,7 @@
 #'
 #' @param sce 
 #' @param dim 
-#' @param genes 
+#' @param by 
 #' @param q 
 #' @param average_expr 
 #' @param only_average 
@@ -19,34 +19,49 @@
 #'
 #' @export
 
-plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FALSE, only_average = FALSE, assay.type = 'logcounts', theme.args = NULL, return_plotlist = FALSE) {
+plotEmbedding <- function(sce, by, dim = "UMAP", q = 0.95, average_expr = FALSE, only_average = FALSE, assay.type = 'logcounts', theme.args = NULL, return_plotlist = FALSE) {
     
-    .checkGenes(sce, genes)
+    if (any(by %in% rownames(sce))) {
+        bygene <- TRUE 
+        .checkGenes(sce, by)
+    }
+    else if (any(by %in% colnames(colData(sce)))) {
+        bygene <- FALSE 
+        .checkColData(sce, by)
+    }
+    else {
+        stop("'by' argument not found in genes nor colData. Aborting. ")
+    }
 
-    df <- data.frame(
-        colData(sce), 
-        PCA_X = reducedDim(sce, 'PCA')[, 1], 
-        PCA_Y = reducedDim(sce, 'PCA')[, 2], 
-        TSNE_X = reducedDim(sce, 'TSNE')[, 1], 
-        TSNE_Y = reducedDim(sce, 'TSNE')[, 2], 
-        UMAP_X = reducedDim(sce, 'UMAP')[, 1], 
-        UMAP_Y = reducedDim(sce, 'UMAP')[, 2], 
-        force_X = reducedDim(sce, 'force')[, 1], 
-        force_Y = reducedDim(sce, 'force')[, 2]
-    )
-    df[, "Dim_1"] <- df[, paste0(dim, "_X")]
-    df[, "Dim_2"] <- df[, paste0(dim, "_Y")]
+    .checkEmbedding(sce, dim)
+
+    df <- data.frame(colData(sce))
+    df[, "Dim_1"] <- reducedDim(sce, dim)[, 1]
+    df[, "Dim_2"] <- reducedDim(sce, dim)[, 2]
     
     # ---- Only 1 gene
-    if (all(length(genes) == 1)) {
-        df$gene <- bindByQuantiles(assay(sce, assay.type)[genes, ], q_low = 1 - q, q_high = q)
-        p <- ggplot(df, aes_string(x = "Dim_1", y = "Dim_2", fill = "gene")) + 
+    if (length(by) == 1) {
+        if (bygene) {
+            df$by <- bindByQuantiles(assay(sce, assay.type)[by, ], q_low = 1 - q, q_high = q)
+            scale <- scale_fill_distiller(palette = 'YlOrBr', direction = 1)
+        } 
+        else {
+            if (length(unique(colData(sce)[[by]])) >= 12) {
+                df$by <- colData(sce)[[by]]
+                scale <- scale_fill_distiller(palette = 'YlOrBr', direction = 1)
+            }
+            else {
+                df$by <- factor(colData(sce)[[by]])
+                scale <- scale_fill_brewer(palette = 'Spectral', direction = 1)
+            }
+       }
+        p <- ggplot(df, aes(x = Dim_1, y = Dim_2, fill = by)) + 
             geom_point(pch = 21, alpha = 0.5, col = '#bcbcbc', stroke = 0.2) + 
             theme_bw() + 
             # scale_fill_gradient(low = 'white', high = '#8b4e36') + 
-            scale_fill_distiller(palette = 'YlOrBr', direction = 1) + 
+            scale + 
             coord_fixed((max(df[, "Dim_1"])-min(df[, "Dim_1"]))/(max(df[, "Dim_2"])-min(df[, "Dim_2"]))) + 
-            labs(y = paste(dim, " 2"), x = paste(dim, " 1"), fill = genes) + 
+            labs(y = paste(dim, " 2"), x = paste(dim, " 1"), fill = by) + 
             theme(
                 panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(), 
@@ -55,9 +70,9 @@ plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FAL
         if (!is.null(theme.args)) p <- p + theme.args
     }
     
-    # ---- Multiple genes
-    if (all(length(genes) > 1)) {
-        for (gene in genes) {
+    # ---- Multiple by
+    if (length(by) > 1) {
+        for (gene in by) {
             expr <- bindByQuantiles(assay(sce, assay.type)[gene, ], q_low = 1 - q, q_high = q)
             df[, paste0(gene, "_expr")] <- expr
         }
@@ -86,7 +101,7 @@ plotEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, average_expr = FAL
             pull(plots)
         
         if (average_expr == TRUE) {
-            df$gene <- bindByQuantiles(Matrix::colMeans(assay(sce, assay.type)[genes, ]), q_low = 1 - q, q_high = q)
+            df$gene <- bindByQuantiles(Matrix::colMeans(assay(sce, assay.type)[by, ]), q_low = 1 - q, q_high = q)
             p <- ggplot(df, aes_string(x = "Dim_1", y = "Dim_2", fill = "expr")) + 
                     geom_point(pch = 21, alpha = 0.5, col = '#bcbcbc', stroke = 0.2) + 
                     theme_bw() + 
@@ -139,17 +154,7 @@ plotAnimatedEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, assay.type
     
     .checkGenes(sce, genes)
 
-    df <- data.frame(
-        colData(sce), 
-        PCA_X = reducedDim(sce, 'PCA')[, 1], 
-        PCA_Y = reducedDim(sce, 'PCA')[, 2], 
-        TSNE_X = reducedDim(sce, 'TSNE')[, 1], 
-        TSNE_Y = reducedDim(sce, 'TSNE')[, 2], 
-        UMAP_X = reducedDim(sce, 'UMAP')[, 1], 
-        UMAP_Y = reducedDim(sce, 'UMAP')[, 2], 
-        force_X = reducedDim(sce, 'force')[, 1], 
-        force_Y = reducedDim(sce, 'force')[, 2]
-    )
+    df <- data.frame(colData(sce))
     df[, "Dim_1"] <- df[, paste0(dim, "_X")]
     df[, "Dim_2"] <- df[, paste0(dim, "_Y")]
 

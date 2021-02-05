@@ -32,4 +32,33 @@ bindByQuantiles <- function(vec, q_low = 0, q_high = 0.99) {
 	)
 }
 
+#' Checking colData names in SCE
+#'
+#' @param sce 
+#' @param col 
+#'
+#' @return ...
+
+.checkColData <- function(sce, col) {
+	absent <- col[!col %in% colnames(colData(sce))]
+	assertthat::assert_that(
+		length(absent) == 0, 
+		msg = message(paste(absent, collapse = ', '), ": column not in SCE colData. Aborting.")
+	)
+}
+
+#' Checking embedding SCE
+#'
+#' @param sce 
+#' @param embedding 
+#'
+#' @return ...
+
+.checkEmbedding <- function(sce, embedding) {
+	assertthat::assert_that(
+		embedding %in% names(reducedDims(cyclingCells)), 
+		msg = message(embedding, ": Embedding not in SCE. Aborting.")
+	)
+}
+
 

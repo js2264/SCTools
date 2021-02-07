@@ -178,11 +178,15 @@ plotAnimatedEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, assay.type
             axis.ticks = element_blank()
         )
     if (!is.null(theme.args)) p <- p + theme.args
-    p <- p + gganimate::transition_states(
+    p <- p + 
+    gganimate::transition_states(
         gene,
         transition_length = 1,
         state_length = 1
-    )
+    ) + 
+    ggtitle('Now showing {closest_state}') + 
+    gganimate::enter_fade() + 
+    gganimate::exit_fade() 
     return(p)
 }
 

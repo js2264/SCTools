@@ -8,10 +8,11 @@
 #' @param q 
 #' @param average_expr 
 #' @param only_average 
-#' @param assay.type
-#' @param theme.args
-#' @param return_plotlist
+#' @param assay.type 
+#' @param theme.args 
+#' @param return_plotlist 
 #'
+#' @import SingleCellExperiment
 #' @import dplyr
 #' @import tidyr
 #' 
@@ -140,9 +141,10 @@ plotEmbedding <- function(sce, by, dim = "UMAP", q = 0.95, average_expr = FALSE,
 #' @param dim 
 #' @param genes 
 #' @param q 
-#' @param assay.type
-#' @param theme.args
+#' @param assay.type 
+#' @param theme.args 
 #'
+#' @import SingleCellExperiment
 #' @import dplyr
 #' @import tidyr
 #' 

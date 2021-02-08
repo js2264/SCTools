@@ -29,6 +29,10 @@ plotEmbedding(
 
 \item{only_average}{}
 
+\item{assay.type}{}
+
+\item{theme.args}{}
+
 \item{return_plotlist}{}
 }
 \value{

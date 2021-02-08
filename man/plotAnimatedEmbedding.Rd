@@ -22,6 +22,8 @@ plotAnimatedEmbedding(
 
 \item{q}{}
 
+\item{assay.type}{}
+
 \item{theme.args}{}
 }
 \value{

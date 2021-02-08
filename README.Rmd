@@ -24,8 +24,8 @@ knitr::opts_chunk$set(
 
 You can install SCTools development version from [GitHub](https://github.com/) with:
 
-``` r
-# install.packages("devtools")
+```{r, eval = FALSE}
+install.packages("devtools")
 devtools::install_github("js2264/SCTools")
 ```
 

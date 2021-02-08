@@ -17,8 +17,9 @@ output: github_document
 
 You can install SCTools development version from [GitHub](https://github.com/) with:
 
-``` r
-# install.packages("devtools")
+
+```r
+install.packages("devtools")
 devtools::install_github("js2264/SCTools")
 ```
 
@@ -29,6 +30,5 @@ This is a basic example:
 
 ```r
 library(SCTools)
-#> Error in library(SCTools): there is no package called 'SCTools'
 ```
 

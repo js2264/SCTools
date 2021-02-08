@@ -22,6 +22,8 @@ bindByQuantiles <- function(vec, q_low = 0, q_high = 0.99) {
 #' @param sce 
 #' @param genes 
 #'
+#' @import SingleCellExperiment
+#' 
 #' @return ...
 
 .checkGenes <- function(sce, genes) {
@@ -37,6 +39,8 @@ bindByQuantiles <- function(vec, q_low = 0, q_high = 0.99) {
 #' @param sce 
 #' @param col 
 #'
+#' @import SingleCellExperiment
+#' 
 #' @return ...
 
 .checkColData <- function(sce, col) {
@@ -52,6 +56,8 @@ bindByQuantiles <- function(vec, q_low = 0, q_high = 0.99) {
 #' @param sce 
 #' @param embedding 
 #'
+#' @import SingleCellExperiment
+#' 
 #' @return ...
 
 .checkEmbedding <- function(sce, embedding) {

@@ -56,7 +56,7 @@ bindByQuantiles <- function(vec, q_low = 0, q_high = 0.99) {
 
 .checkEmbedding <- function(sce, embedding) {
 	assertthat::assert_that(
-		embedding %in% names(reducedDims(cyclingCells)), 
+		embedding %in% names(reducedDims(sce)), 
 		msg = message(embedding, ": Embedding not in SCE. Aborting.")
 	)
 }

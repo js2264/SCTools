@@ -192,7 +192,7 @@ plotAnimatedEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, assay.type
     return(p)
 }
 
-#' plotGE
+#' plotBoxplots
 #' 
 #' Quickly plot gene expression of genes as boxplots
 #'
@@ -211,6 +211,7 @@ plotAnimatedEmbedding <- function(sce, genes, dim = "UMAP", q = 0.95, assay.type
 plotBoxplots <- function(sce, genes, by = 'annotation', assay.type = 'logcounts') {
     
     .checkGenes(sce, genes)
+    .checkColData(sce, by)
 
     df <- data.frame(
         by = colData(sce)[[by]],
@@ -225,6 +226,70 @@ plotBoxplots <- function(sce, genes, by = 'annotation', assay.type = 'logcounts'
         labs(y = "log counts", x = "", fill = "Sets") + 
         theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
     if (length(genes) > 1) p <- p + facet_wrap("gene") 
+    return(p)
+}
+
+#' plotBarplots
+#' 
+#' Quickly plot gene expression of genes as boxplots
+#'
+#' @param sce 
+#' @param genes 
+#' @param by 
+#' @param assay.type
+#'
+#' @return plot
+#' 
+#' @import SingleCellExperiment
+#' @import ggplot2
+#'
+#' @export
+
+plotBarplots <- function(sce, genes, color_by = 'annotation', order_by = NULL, bins = NULL, assay.type = 'logcounts') {
+    
+    .checkGenes(sce, genes)
+    .checkColData(sce, color_by)
+    .checkColData(sce, order_by)
+    .checkColData(sce, 'Barcode')
+
+    `%<>%` <- magrittr::`%<>%`
+
+    df <- data.frame(
+        color_by = colData(sce)[[color_by]],
+        order_by = colData(sce)[[order_by]],
+        cell = colData(sce)[['Barcode']], 
+        t(as.matrix(assay(sce, assay.type)[genes,]))
+    ) %>% 
+        arrange(color_by) %>% 
+        gather('gene', 'expr', -color_by, -order_by, -cell) %>% 
+        filter(!is.na(color_by)) %>% 
+        mutate(gene = factor(gene, genes))
+
+    if (!is.null(order_by)) {
+        df %<>% arrange(order_by)
+    }
+    df %<>% mutate(cell = factor(cell, unique(cell)))
+
+    if (!is.null(bins)) {
+        df <- df %>% 
+            mutate(bins = cut(1:nrow(.), breaks = seq(1, nrow(.), length.out = bins), include.lowest = TRUE)) %>% 
+            group_by(gene, bins) %>% 
+            summarize(expr = mean(expr)) %>% 
+            mutate(cell = bins) %>% 
+            mutate(color_by = 1)
+    }
+
+    p <- ggplot(df, aes(x = cell, y = expr, fill = color_by, alpha = expr)) +  
+        geom_col(width=1) + 
+        theme_bw() + 
+        labs(y = "log counts", x = "", fill = "Sets") + 
+        theme(
+            axis.text.x = element_blank(), 
+            axis.ticks.x = element_blank(), 
+            panel.grid.major.x = element_blank(), 
+            panel.grid.minor.x = element_blank()
+        ) + 
+        facet_grid(rows = "gene", scales = 'free')
     return(p)
 }
 

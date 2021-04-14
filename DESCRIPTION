@@ -1,6 +1,6 @@
 Package: SCTools
-Title: Utilities and tools for scRNAseq processing
-Version: 0.0.0.9000
+Title: Utilities and plotting tools for scRNAseq processing
+Version: 0.0.1
 Authors@R: 
     person(given = "Jacques",
            family = "Serizay",

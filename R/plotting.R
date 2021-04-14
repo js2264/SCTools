@@ -235,7 +235,9 @@ plotBoxplots <- function(sce, genes, by = 'annotation', assay.type = 'logcounts'
 #'
 #' @param sce 
 #' @param genes 
-#' @param by 
+#' @param color_by 
+#' @param order_by 
+#' @param bins 
 #' @param assay.type
 #'
 #' @return plot

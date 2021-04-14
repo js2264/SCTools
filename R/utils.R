@@ -25,6 +25,7 @@ bindByQuantiles <- function(vec, q_low = 0, q_high = 0.99) {
 #' @import SingleCellExperiment
 #' 
 #' @return ...
+#' @export
 
 .checkGenes <- function(sce, genes) {
 	absent <- genes[!genes %in% rownames(sce)]
@@ -42,6 +43,7 @@ bindByQuantiles <- function(vec, q_low = 0, q_high = 0.99) {
 #' @import SingleCellExperiment
 #' 
 #' @return ...
+#' @export
 
 .checkColData <- function(sce, col) {
 	absent <- col[!col %in% colnames(colData(sce))]
@@ -59,6 +61,7 @@ bindByQuantiles <- function(vec, q_low = 0, q_high = 0.99) {
 #' @import SingleCellExperiment
 #' 
 #' @return ...
+#' @export
 
 .checkEmbedding <- function(sce, embedding) {
 	assertthat::assert_that(

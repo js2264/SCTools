@@ -57,21 +57,14 @@ plotEmbedding <- function(sce, by, dim = "UMAP", q = 0.95, average_expr = FALSE,
             }
        }
         p <- ggplot(df, aes(x = Dim_1, y = Dim_2, fill = by)) + 
-            geom_point(pch = 21, alpha = 0.5, col = '#bcbcbc', stroke = 0.2) + 
-            theme_bw() + 
-            # scale_fill_gradient(low = 'white', high = '#8b4e36') + 
+            ggrastr::geom_point_rast(pch = 21, alpha = 0.5, col = '#bcbcbc', stroke = 0.2) + 
+            ggReducedDimTheme() + 
             scale + 
-            coord_fixed((max(df[, "Dim_1"])-min(df[, "Dim_1"]))/(max(df[, "Dim_2"])-min(df[, "Dim_2"]))) + 
-            labs(y = paste(dim, " 2"), x = paste(dim, " 1"), fill = by) + 
-            theme(
-                panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(), 
-                axis.ticks = element_blank()
-            )
+            labs(y = paste(dim, " 2"), x = paste(dim, " 1"), fill = by)
         if (!is.null(theme.args)) p <- p + theme.args
     }
     
-    # ---- Multiple by
+    # ---- Multiple genes
     if (length(by) > 1) {
         for (gene in by) {
             expr <- bindByQuantiles(assay(sce, assay.type)[gene, ], q_low = 1 - q, q_high = q)
@@ -80,17 +73,11 @@ plotEmbedding <- function(sce, by, dim = "UMAP", q = 0.95, average_expr = FALSE,
         df_bound <- gather(df, "gene", "expr", -grep("_expr$", colnames(df), value = TRUE, invert = TRUE))
         plotFUN <- function(df, gene, theme.args) {
             p <- ggplot(df, aes_string(x = "Dim_1", y = "Dim_2", fill = "expr")) + 
-                geom_point(pch = 21, alpha = 0.5, col = '#bcbcbc', stroke = 0.2) + 
-                theme_bw() + 
-                # scale_fill_gradient(low = 'white', high = '#8b4e36') + 
+                ggrastr::geom_point_rast(pch = 21, alpha = 0.5, col = '#bcbcbc', stroke = 0.2) +
+                ggReducedDimTheme() + 
                 scale_fill_distiller(palette = 'YlOrBr', direction = 1) + 
                 coord_fixed((max(df[, "Dim_1"])-min(df[, "Dim_1"]))/(max(df[, "Dim_2"])-min(df[, "Dim_2"]))) + 
-                labs(y = paste(dim, " 2"), x = paste(dim, " 1"), fill = '', title = gsub('_expr', '', gene)) + 
-                theme(
-                    panel.grid.major = element_blank(),
-                    panel.grid.minor = element_blank(), 
-                    axis.ticks = element_blank()
-                )
+                labs(y = paste(dim, " 2"), x = paste(dim, " 1"), fill = '', title = gsub('_expr', '', gene))
             if (!is.null(theme.args)) p <- p + theme.args
             return(p)
         }
@@ -98,7 +85,6 @@ plotEmbedding <- function(sce, by, dim = "UMAP", q = 0.95, average_expr = FALSE,
             group_by(gene) %>% 
             nest() %>% 
             mutate(plots = purrr::map2(data, gene, plotFUN, theme.args)) %>% 
-            # mutate(plots = purrr::map2(data, gene, plotFUN)) %>% 
             pull(plots)
         
         if (average_expr == TRUE) {
